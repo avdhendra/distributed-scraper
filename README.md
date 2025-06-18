@@ -133,7 +133,6 @@ distributed-web-scraper/
 │   ├── alerts.yml
 │   ├── consul_config.json
 │   ├── docker-compose.yml
-├── tests/
 ├── .github/workflows/
 ├── go.mod
 ├── go.sum
@@ -238,19 +237,7 @@ docker-compose -f docker/docker-compose.yml down
 * **Alertmanager**: [http://localhost:9093](http://localhost:9093)
 * **Consul**: [http://localhost:8500](http://localhost:8500)
 
-## Testing
 
-Run unit tests:
-
-```sh
-go test ./tests/...
-```
-
-Tests cover:
-
-* Scraper factory
-* Kafka consumer
-* Prometheus metrics
 
 ## CI/CD
 
