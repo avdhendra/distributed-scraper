@@ -1,0 +1,7 @@
+{
+  "scraper/config": {
+    "KAFKA_BROKERS": ["kafka:9092"],
+    "SCRAPE_INTERVAL": 300,
+    "PROXY_LIST": ["proxy1:port", "proxy2:port"]
+  }
+}

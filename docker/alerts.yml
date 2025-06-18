@@ -1,0 +1,11 @@
+groups:
+- name: scraper_alerts
+  rules:
+  - alert: HighScrapeErrorRate
+    expr: rate(scraper_errors_total[5m]) > 0.1
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High error rate in scraper ({{ $labels.platform }})"
+      description: "Scraper for {{ $labels.platform }} is experiencing errors at a rate of {{ $value }} per second."

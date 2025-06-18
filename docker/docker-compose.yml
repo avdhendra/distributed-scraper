@@ -1,0 +1,95 @@
+version: '3.8'
+services:
+  scraper:
+    build:
+      context: ../services/scraper
+      dockerfile: Dockerfile
+    environment:
+      - LINKEDIN_CLIENT_ID=${LINKEDIN_CLIENT_ID}
+      - LINKEDIN_CLIENT_SECRET=${LINKEDIN_CLIENT_SECRET}
+      - YOUTUBE_CLIENT_ID=${YOUTUBE_CLIENT_ID}
+      - YOUTUBE_CLIENT_SECRET=${YOUTUBE_CLIENT_SECRET}
+      - INSTAGRAM_CLIENT_ID=${INSTAGRAM_CLIENT_ID}
+      - INSTAGRAM_CLIENT_SECRET=${INSTAGRAM_CLIENT_SECRET}
+    depends_on:
+      - kafka
+      - consul
+      - jaeger
+
+  consumer:
+    build:
+      context: ../services/consumer
+      dockerfile: Dockerfile
+    environment:
+      - POSTGRES_URL=${POSTGRES_URL}
+    depends_on:
+      - postgres
+      - kafka
+      - consul
+      - jaeger
+
+  metrics:
+    build:
+      context: ../services/metrics
+      dockerfile: Dockerfile
+    ports:
+      - "9090:9090"
+    depends_on:
+      - consul
+
+  postgres:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=scraper
+    volumes:
+      - ../sql:/docker-entrypoint-initdb.d
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+    depends_on:
+      - zookeeper
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      - ZOOKEEPER_CLIENT_PORT=2181
+      - ZOOKEEPER_TICK_TIME=2000
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ../docker/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ../docker/alerts.yml:/etc/prometheus/alerts.yml
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+
+  consul:
+    image: consul:latest
+    ports:
+      - "8500:8500"
+    volumes:
+      - ../docker/consul_config.json:/consul/config/config.json
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "16686:16686"
+      - "14268:14268"
+
+  alertmanager:
+    image: prom/alertmanager:latest
+    ports:
+      - "9093:9093"
